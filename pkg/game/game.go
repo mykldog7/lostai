@@ -11,45 +11,46 @@ import "fmt"
 // The Player must select a card and return a move.
 type Player interface {
 	SelectMove(game VisibleState) Move
-	GetName() string
+	String() string
 }
 
 //Move describes a move that a player makes. Which card is played, and is it discarded.
 // If not discarded, then the move is assumed to be scored.
 type Move struct {
 	C            Card   // Card that is being placed on the table this move.
-	PickupChoice string // One of: ["new", "blue", "yellow", etc]
+	PickupChoice string // One of: ["new", "B", "Y", values of game.CardColors]
 	Discard      bool   // Is the C(Card) a discard?
+}
+
+func (m Move) String() string {
+	var playDest string
+	if m.Discard {
+		playDest = "discard"
+	} else {
+		playDest = "table"
+	}
+	return fmt.Sprintf("plays %v to %v then picks up %v", m.C, playDest, m.PickupChoice)
 }
 
 //CardSet stores the set of cards that a player will score or a set of cards discarded.
 // DiscardArea stores the set of cards that have been discarded.
 // While playing the game in real-life this sits between both players scoing cards.
 type CardSet struct {
-	Blue, Red, Yellow, White, Green []Card //maybe better to use a map so that the number of colours can be adjusted.
-	OrderMatters                    bool   //does the value of the card have to increase.. table vs discard
+	Cards        map[string][]Card
+	OrderMatters bool //does the value of the card have to increase.. table vs discard
 }
 
 func (d *CardSet) String() string {
-	return fmt.Sprintf("B:%v\nR:%v\nY:%v\nW:%v\nG:%v\n", d.Blue, d.Red, d.Yellow, d.White, d.Green)
+	report := ""
+	for col, cards := range d.Cards {
+		report += fmt.Sprintf("%v:%v\n", col, cards)
+	}
+	return report
 }
 
 //PlaceCard places that Card into the CardSet
 func (d *CardSet) PlaceCard(c Card) {
-	switch c.Col {
-	case "B":
-		d.Blue = append(d.Blue, c)
-	case "R":
-		d.Red = append(d.Red, c)
-	case "G":
-		d.Green = append(d.Green, c)
-	case "Y":
-		d.Yellow = append(d.Yellow, c)
-	case "W":
-		d.White = append(d.White, c)
-	default:
-		panic("Unknown color")
-	}
+	d.Cards[c.Col] = append(d.Cards[c.Col], c)
 }
 
 //VisibleState is a struct of pointers that Players can use to make descisions about what to play
@@ -57,19 +58,19 @@ func (d *CardSet) PlaceCard(c Card) {
 // It shows cards that have been revealed.
 type VisibleState struct {
 	Hand          []Card
-	Table         CardSet
-	OpponentTable CardSet
-	Discards      CardSet
+	Table         *CardSet
+	OpponentTable *CardSet
+	Discards      *CardSet
 	DeckCardsLeft int
 }
 
 //Contender tracks all data relevant to a player of the Game.
 // This is distinct from Player(which provides the descision making)
 type Contender struct {
-	player Player
-	Table  CardSet
-	Hand   []Card
-	ID     string
+	ExtPlayer Player
+	Table     CardSet
+	Hand      []Card
+	ID        string
 }
 
 //Game tracks all the items currently involved in the game
@@ -88,23 +89,67 @@ func (g *Game) String() string {
 		g.P1.ID, g.P1.Hand, g.P1.Table, g.discardPiles, g.P2.Table, g.P2.Hand, g.P2.ID)
 }
 
+//NewGame returns a newly initialized Game object, ready for players to be added
+func NewGame() Game {
+	g := Game{}
+	g.Init()
+	return g
+}
+
+//Init sets or resets the Game object to a new state.
+func (g *Game) Init() {
+	g.InitializeDeck()
+	g.InitializeStorage()
+	g.Turn = 0
+	//TODO return all hands table to zero/pristine state
+}
+
+//InitializeStorage gets the CardSets ready
+func (g *Game) InitializeStorage() {
+	g.P1.Table.Cards = make(map[string][]Card)
+	g.P2.Table.Cards = make(map[string][]Card)
+	g.discardPiles.Cards = make(map[string][]Card)
+}
+
 //NextPlayer returns the player who needs to play the next move.
 func (g *Game) NextPlayer() Player {
-	return g.nextToMove.player
+	return g.nextToMove.ExtPlayer
 }
 
 //Apply the given Move to the gamestate
 func (g *Game) Apply(m Move) {
 	//check that player(to play) actually has Card they are wanting to play.
-	//TODO if g.nextToMove.Hand
-	if m.Discard {
+	if !contains(g.nextToMove.Hand, m.C) {
+		panic(fmt.Sprintf("Player:%v played a card that is not in their hand, cheater!\n Card played was: %v, the hand contains: %v", g.nextToMove.ExtPlayer, m.C, g.nextToMove.Hand))
+	}
+	remove(g.nextToMove.Hand, m.C)
+	//Apply move to modify gamestate...
+	if m.Discard { //discards are always valid
 		g.discardPiles.PlaceCard(m.C)
 	} else {
-		g.P1.Table.PlaceCard(m.C)
-	}
+		//check that the play is legal,
+		// legal moves are to play a card of higher value onto a card of lower value.
+		targetLocation := g.nextToMove.Table.Cards[m.C.Col]
+		validMove := true //if the targetLocation is empty then the move is valid
+		if len(targetLocation) > 0 {
+			if !m.C.CanStackOn(targetLocation[len(targetLocation)-1]) {
+				validMove = false
+			}
+			if !validMove {
+				panic(fmt.Sprintf("Player %v tried to play illegal move. They put card %v, on top of %v.",
+					g.nextToMove.ExtPlayer, m.C, targetLocation[len(targetLocation)-1]))
+			}
+		}
+		if validMove {
+			g.nextToMove.Table.PlaceCard(m.C)
+		}
+	} //Finish updating gamestate
+	//Update players hand with new card
 	if m.PickupChoice == "new" {
 		g.nextToMove.Hand = append(g.nextToMove.Hand, g.Deck[0])
 		g.Deck = g.Deck[1:] //Drop card 0 from Deck.
+	} else {
+		//TODO implement pickup discard
 	}
 	g.opponent, g.nextToMove = g.nextToMove, g.opponent // Swap active and non-active player
 	g.Turn++
@@ -115,9 +160,11 @@ func (g *Game) Apply(m Move) {
 func (g *Game) AddPlayer(p Player, pos int) {
 	switch pos {
 	case 1:
-		g.P1.player = p
+		g.P1.ExtPlayer = p
+		g.nextToMove = &g.P1
 	case 2:
-		g.P2.player = p
+		g.P2.ExtPlayer = p
+		g.opponent = &g.P2
 	default:
 		fmt.Printf("FAILED TO ADD player to position:%v", pos)
 	}
@@ -125,8 +172,6 @@ func (g *Game) AddPlayer(p Player, pos int) {
 
 //Deal is called to setup before the first move.
 func (g *Game) Deal() {
-	g.nextToMove = &g.P1
-	g.opponent = &g.P2
 	for i := 0; i < 8; i++ {
 		//Take two cards from the top of the deck..
 		c1, c2 := g.Deck[0], g.Deck[1]
@@ -140,8 +185,8 @@ func (g *Game) Deal() {
 //GetVisibleState returns the dataset that the next agent is allowed to use
 func (g *Game) GetVisibleState() VisibleState {
 	return VisibleState{Hand: g.nextToMove.Hand,
-		Table:         g.nextToMove.Table,
-		OpponentTable: g.opponent.Table,
-		Discards:      g.discardPiles,
+		Table:         &g.nextToMove.Table,
+		OpponentTable: &g.opponent.Table,
+		Discards:      &g.discardPiles,
 		DeckCardsLeft: len(g.Deck)}
 }

@@ -9,7 +9,7 @@ import (
 //Player implementation goes here
 /* Implements:
 SelectMove(hand []Card, game VisibleState) Move
-GiveIdentifier() string
+String() string
 */
 
 //RandomLegalMovePlayer is a player for the LostCity game
@@ -20,7 +20,7 @@ type RandomLegalMovePlayer struct {
 }
 
 //GetName returns the name of this player
-func (p RandomLegalMovePlayer) GetName() string {
+func (p RandomLegalMovePlayer) String() string {
 	return fmt.Sprintf("%v[RandomLegalMovePlayer]", p.Name)
 }
 
@@ -30,6 +30,6 @@ func (p RandomLegalMovePlayer) SelectMove(vs game.VisibleState) game.Move {
 	rand.Shuffle(len(vs.Hand), func(i, j int) {
 		vs.Hand[i], vs.Hand[j] = vs.Hand[j], vs.Hand[i]
 	})
-	fmt.Println("TODO: IMPLEMENT CHECK FOR LEGAL MOVE")
-	return game.Move{C: vs.Hand[0], Discard: false}
+	//fmt.Println("TODO: IMPLEMENT CHECK FOR LEGAL MOVE")
+	return game.Move{C: vs.Hand[0], Discard: false, PickupChoice: "new"}
 }

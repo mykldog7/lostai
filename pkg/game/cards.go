@@ -23,6 +23,11 @@ var CardColors = []string{"B", "R", "G", "Y", "W"}
 //CardValues contains the valid card Values
 var CardValues = []string{"2", "3", "4", "5", "6", "7", "8", "9", "H", "H", "H"}
 
+//CanStackOn returns true of the card can stack on top of the Card passed as argument.
+func (c Card) CanStackOn(p Card) bool {
+	return c.Col == p.Col && (p.Val < c.Val || p.Val == "H")
+}
+
 //GiveRandomExampleCard is a utility function, it will present a random card.
 // This is done by picking a random colour and value, then presenting that card.
 func GiveRandomExampleCard() Card {
@@ -50,7 +55,7 @@ func (g *Game) Shuffle(seed int64) {
 }
 
 //InitalizeDeck returns a []Card with one of each card. It is a perfect deck.
-func (g *Game) InitalizeDeck() {
+func (g *Game) InitializeDeck() {
 	g.Deck = make([]Card, 0, len(CardColors)*len(CardValues)) //one of each value of each color
 	for _, col := range CardColors {
 		for _, val := range CardValues {
@@ -59,20 +64,26 @@ func (g *Game) InitalizeDeck() {
 	}
 }
 
-//Remove is used to take a card out of a card set.
-func Remove(cs []Card, c Card) []Card {
+//Remove is used to take a card out of a card set. (remove a card from a players hand)
+func remove(cs []Card, c Card) []Card {
 	for i := 0; i < len(cs); i++ {
 		if cs[i].Col == c.Col && cs[i].Val == c.Val {
 			cs[i] = cs[len(cs)-1]
 			//cs[len(cs)-1] = nil
 			cs = cs[:len(cs)-1]
-			break
+			return cs
 		}
 	}
-	return cs
+	panic("Tried to remove a card that wasn't in a hand.")
 }
 
-//Add is used to add a card to a cardset, usually a hand recieving a Card after pickup
-func Add(cs []Card, c Card) []Card {
-	return append(cs, c)
+//Contains checks if the slice of cards contains a card matching the given card, if it does it returns true.
+func contains(cs []Card, c Card) bool {
+	for _, v := range cs {
+		if v.Col == c.Col && v.Val == c.Val {
+			return true
+		}
+	}
+	//not found at all? then return false
+	return false
 }

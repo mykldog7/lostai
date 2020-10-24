@@ -7,12 +7,11 @@ import (
 )
 
 func main() {
-	g := &game.Game{}
+	g := game.NewGame()
 	g.AddPlayer(players.RandomLegalMovePlayer{Name: "Annie"}, 1)
 	g.AddPlayer(players.RandomLegalMovePlayer{Name: "Bobby"}, 2)
-	fmt.Println("Starting...")
-	//Shuffle the deck
-	g.InitalizeDeck()
+
+	fmt.Println("Starting simulation...")
 	fmt.Println("Shuffling...")
 	g.Shuffle(0)
 	//Deal the hands
@@ -20,15 +19,17 @@ func main() {
 	g.Deal()
 	fmt.Println("Staring play...")
 	for {
-		fmt.Printf("Turn %v:\n", g.Turn)
 		if len(g.Deck) == 0 {
 			fmt.Println("Deck exhausted, Game over.")
+			break
 		}
+		fmt.Printf("Turn %v:", g.Turn)
 		playersMove := g.NextPlayer().SelectMove(g.GetVisibleState())
+		fmt.Printf("%v %v", g.NextPlayer(), playersMove)
 		g.Apply(playersMove)
-		//fmt.Println(g)
+		fmt.Printf("\n")
 	}
-	//fmt.Println(g)
+	fmt.Println("Simulation Completed.")
 	//fmt.Println(game.Deck)
 	//fmt.Println(game.GiveRandomExampleCard())
 	//g.InitalizeDeck()
