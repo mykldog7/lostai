@@ -64,6 +64,11 @@ type VisibleState struct {
 	DeckCardsLeft int
 }
 
+func (vs VisibleState) String() string {
+	return fmt.Sprintf("VisibleState:\nHand:%v,Table:%v,OpTable:%v,Discards:%v,CardsLeft:%v",
+		vs.Hand, vs.Table, vs.OpponentTable, vs.Discards, vs.DeckCardsLeft)
+}
+
 //Contender tracks all data relevant to a player of the Game.
 // This is distinct from Player(which provides the descision making)
 type Contender struct {
@@ -122,13 +127,13 @@ func (g *Game) Apply(m Move) {
 	if !contains(g.nextToMove.Hand, m.C) {
 		panic(fmt.Sprintf("Player:%v played a card that is not in their hand, cheater!\n Card played was: %v, the hand contains: %v", g.nextToMove.ExtPlayer, m.C, g.nextToMove.Hand))
 	}
-	remove(g.nextToMove.Hand, m.C)
+	g.nextToMove.Hand = Remove(g.nextToMove.Hand, m.C)
 	//Apply move to modify gamestate...
-	if m.Discard { //discards are always valid
+	if m.Discard { //discards are always legal
 		g.discardPiles.PlaceCard(m.C)
 	} else {
 		//check that the play is legal,
-		// legal moves are to play a card of higher value onto a card of lower value.
+		// legal moves involve playing a card of higher value onto a card of lower value.
 		targetLocation := g.nextToMove.Table.Cards[m.C.Col]
 		validMove := true //if the targetLocation is empty then the move is valid
 		if len(targetLocation) > 0 {
@@ -143,13 +148,21 @@ func (g *Game) Apply(m Move) {
 		if validMove {
 			g.nextToMove.Table.PlaceCard(m.C)
 		}
-	} //Finish updating gamestate
+	} //Finished updating gamestate
 	//Update players hand with new card
 	if m.PickupChoice == "new" {
 		g.nextToMove.Hand = append(g.nextToMove.Hand, g.Deck[0])
 		g.Deck = g.Deck[1:] //Drop card 0 from Deck.
 	} else {
 		//TODO implement pickup discard
+		//place the card that has the highest index into the players hand
+		i := len(g.discardPiles.Cards[m.PickupChoice])
+		if i == 0 {
+			panic(fmt.Sprintf("player %v, tried to pickup from empty discard.", g.nextToMove))
+		}
+		topCard := g.discardPiles.Cards[m.PickupChoice][i-1]
+		g.discardPiles.Cards[m.PickupChoice] = g.discardPiles.Cards[m.PickupChoice][:i-1]
+		g.nextToMove.Hand = append(g.nextToMove.Hand, topCard)
 	}
 	g.opponent, g.nextToMove = g.nextToMove, g.opponent // Swap active and non-active player
 	g.Turn++
@@ -185,8 +198,8 @@ func (g *Game) Deal() {
 //GetVisibleState returns the dataset that the next agent is allowed to use
 func (g *Game) GetVisibleState() VisibleState {
 	return VisibleState{Hand: g.nextToMove.Hand,
-		Table:         &g.nextToMove.Table,
-		OpponentTable: &g.opponent.Table,
-		Discards:      &g.discardPiles,
+		Table:         &(g.nextToMove.Table),
+		OpponentTable: &(g.opponent.Table),
+		Discards:      &(g.discardPiles),
 		DeckCardsLeft: len(g.Deck)}
 }

@@ -65,7 +65,7 @@ func (g *Game) InitializeDeck() {
 }
 
 //Remove is used to take a card out of a card set. (remove a card from a players hand)
-func remove(cs []Card, c Card) []Card {
+func Remove(cs []Card, c Card) []Card {
 	for i := 0; i < len(cs); i++ {
 		if cs[i].Col == c.Col && cs[i].Val == c.Val {
 			cs[i] = cs[len(cs)-1]
