@@ -5,12 +5,14 @@ package game
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 //Card type
 type Card struct {
-	Val string
-	Col string
+	ValNum int    //used to score should match the Val, field
+	Val    string //shows the facevalue of the card
+	Col    string //shows the color of the card
 }
 
 func (c Card) String() string {
@@ -24,8 +26,8 @@ var CardColors = []string{"B", "R", "G", "Y", "W"}
 var CardValues = []string{"2", "3", "4", "5", "6", "7", "8", "9", "H", "H", "H"}
 
 //CanStackOn returns true of the card can stack on top of the Card passed as argument.
-func (c Card) CanStackOn(p Card) bool {
-	return c.Col == p.Col && (p.Val < c.Val || p.Val == "H")
+func (c Card) CanStackOn(p Card) bool { //6<H
+	return c.Col == p.Col && (((p.Val < c.Val) && (c.Val != "H") || (p.Val == "H" && c.Val != "H")) || p.Val == "H" && c.Val == "H")
 }
 
 //GiveRandomExampleCard is a utility function, it will present a random card.
@@ -33,7 +35,17 @@ func (c Card) CanStackOn(p Card) bool {
 func GiveRandomExampleCard() Card {
 	var col string = CardColors[rand.Intn(len(CardColors))]
 	var val string = CardValues[rand.Intn(len(CardValues))]
-	return Card{Col: col, Val: val}
+	valnum := 0
+	if val == "H" {
+		valnum = -1
+	} else {
+		var err error
+		valnum, err = strconv.Atoi(val)
+		if err != nil {
+			panic(fmt.Sprintf("error converting %v to int", val))
+		}
+	}
+	return Card{Col: col, Val: val, ValNum: valnum}
 }
 
 //GiveRandomExampleCardset is a utility function, it will present a random cardset.
@@ -54,12 +66,22 @@ func (g *Game) Shuffle(seed int64) {
 	})
 }
 
-//InitalizeDeck returns a []Card with one of each card. It is a perfect deck.
+//InitializeDeck returns a []Card with one of each card. It is a perfect deck.
 func (g *Game) InitializeDeck() {
 	g.Deck = make([]Card, 0, len(CardColors)*len(CardValues)) //one of each value of each color
 	for _, col := range CardColors {
 		for _, val := range CardValues {
-			g.Deck = append(g.Deck, Card{Col: col, Val: val})
+			valnum := 0
+			if val == "H" {
+				valnum = -1
+			} else {
+				var err error
+				valnum, err = strconv.Atoi(val)
+				if err != nil {
+					panic(fmt.Sprintf("error converting %v to int", val))
+				}
+			}
+			g.Deck = append(g.Deck, Card{Col: col, Val: val, ValNum: valnum})
 		}
 	}
 }

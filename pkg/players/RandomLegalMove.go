@@ -30,6 +30,18 @@ func (p RandomLegalMovePlayer) SelectMove(vs game.VisibleState) game.Move {
 	rand.Shuffle(len(vs.Hand), func(i, j int) {
 		vs.Hand[i], vs.Hand[j] = vs.Hand[j], vs.Hand[i]
 	})
-	//fmt.Println("TODO: IMPLEMENT CHECK FOR LEGAL MOVE")
-	return game.Move{C: vs.Hand[0], Discard: false, PickupChoice: "new"}
+	//TODO: IMPLEMENT CHECK FOR LEGAL MOVE
+	i := 0
+	for ; i < len(vs.Hand); i++ {
+		color := vs.Hand[i].Col
+		cardsOfColor := len(vs.Table.Cards[color])
+		if cardsOfColor == 0 {
+			return game.Move{C: vs.Hand[i], Discard: false, PickupChoice: "new"}
+		}
+		if vs.Hand[i].CanStackOn(vs.Table.Cards[color][len(vs.Table.Cards[color])-1]) {
+			return game.Move{C: vs.Hand[i], Discard: false, PickupChoice: "new"}
+		}
+	}
+	//discard if we can't find a legal move to play to the table
+	return game.Move{C: vs.Hand[0], Discard: true, PickupChoice: "new"}
 }

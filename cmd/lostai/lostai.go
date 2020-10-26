@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	fmt.Println("H" < "6")
 	g := game.NewGame()
 	g.AddPlayer(players.RandomLegalMovePlayer{Name: "Annie"}, 1)
 	g.AddPlayer(players.RandomLegalMovePlayer{Name: "Bobby"}, 2)
@@ -30,7 +31,8 @@ func main() {
 		fmt.Printf("\n")
 	}
 	fmt.Println("Simulation Completed.")
-	//fmt.Println(game.Deck)
-	//fmt.Println(game.GiveRandomExampleCard())
+	fmt.Println("---Scores---")
+	p1Score, p2Score := g.Score()
+	fmt.Printf("%v Scored: %v\n%v Scored: %v", g.P1, p1Score, g.P2, p2Score)
 	//g.InitalizeDeck()
 }
