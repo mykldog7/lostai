@@ -29,9 +29,7 @@ func main() {
 		g.Apply(playersMove)
 		fmt.Printf("\n")
 	}
-	fmt.Println("Simulation Completed.")
 	fmt.Println("---Scores---")
 	p1Score, p2Score := g.Score()
 	fmt.Printf("%v Scored: %v\n%v Scored: %v\n", g.P1.ExtPlayer, p1Score, g.P2.ExtPlayer, p2Score)
-	//g.InitalizeDeck()
 }

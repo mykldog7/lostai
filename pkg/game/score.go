@@ -47,6 +47,5 @@ func (cs *CardSet) Score() int {
 
 //Score is used to show the scores of the current game state
 func (g *Game) Score() (int, int) {
-	fmt.Println("TODO: implement scoring using the CardSet scorer.(above)")
 	return g.P1.Table.Score(), g.P2.Table.Score()
 }
