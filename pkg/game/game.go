@@ -174,9 +174,11 @@ func (g *Game) AddPlayer(p Player, pos int) {
 	switch pos {
 	case 1:
 		g.P1.ExtPlayer = p
+		g.P1.Table.OrderMatters = true //Required to be set on initialization of the contender
 		g.nextToMove = &g.P1
 	case 2:
 		g.P2.ExtPlayer = p
+		g.P2.Table.OrderMatters = true //Required to be set on initialization of the contender
 		g.opponent = &g.P2
 	default:
 		fmt.Printf("FAILED TO ADD player to position:%v", pos)

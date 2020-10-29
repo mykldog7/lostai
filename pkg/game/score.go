@@ -1,8 +1,8 @@
 package game
 
-import "fmt"
-
 //This file contains code for how scores are calculated (in the game)
+
+import "fmt"
 
 //Score is used to generate/calculate the score from a CardSet
 func (cs *CardSet) Score() int {
@@ -38,15 +38,15 @@ func (cs *CardSet) Score() int {
 		if len(stack) >= 8 {
 			stackTotal += 20
 		}
-		fmt.Printf("Counted %v, determined it scores %v.", stack, stackTotal)
+		fmt.Printf("Counted %v, determined it scores %v.\n", stack, stackTotal)
 		total += stackTotal
 	}
-	fmt.Printf("TableTotal: %v\n", total)
+	fmt.Printf("TableTotal: %v\n\n", total)
 	return total
 }
 
 //Score is used to show the scores of the current game state
 func (g *Game) Score() (int, int) {
 	fmt.Println("TODO: implement scoring using the CardSet scorer.(above)")
-	return 1, 1
+	return g.P1.Table.Score(), g.P2.Table.Score()
 }
