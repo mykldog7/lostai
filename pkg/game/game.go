@@ -57,11 +57,12 @@ func (d *CardSet) PlaceCard(c Card) {
 // It represents part of the game which is publicly visible to the players
 // It shows cards that have been revealed.
 type VisibleState struct {
-	Hand          []Card
-	Table         *CardSet
-	OpponentTable *CardSet
-	Discards      *CardSet
-	DeckCardsLeft int
+	Hand                   []Card
+	OpponentHandKnownCards []Card //This is usually empty, but in the case when opponent picks up discard, it will show that card until the opponent plays that card to the table
+	Table                  *CardSet
+	OpponentTable          *CardSet
+	Discards               *CardSet
+	DeckCardsLeft          int
 }
 
 func (vs VisibleState) String() string {
@@ -72,10 +73,11 @@ func (vs VisibleState) String() string {
 //Contender tracks all data relevant to a player of the Game.
 // This is distinct from Player(which provides the descision making)
 type Contender struct {
-	ExtPlayer Player
-	Table     CardSet
-	Hand      []Card
-	ID        string
+	ExtPlayer      Player
+	Table          CardSet
+	Hand           []Card
+	DiscardPickups []Card //Contains a record of cards that this player has picked up from the discard but not played yet.
+	ID             string
 }
 
 //Game tracks all the items currently involved in the game
@@ -147,6 +149,11 @@ func (g *Game) Apply(m Move) {
 		}
 		if validMove {
 			g.nextToMove.Table.PlaceCard(m.C)
+			//Check if this card was a discarded card that the player picked up.
+			// If it was then we can remove it from the KnownCards set, as it will now be represented on the table.
+			if contains(g.nextToMove.DiscardPickups, m.C) {
+				Remove(g.nextToMove.DiscardPickups, m.C)
+			}
 		}
 	} //Finished updating gamestate
 	//Update players hand with new card
@@ -154,8 +161,7 @@ func (g *Game) Apply(m Move) {
 		g.nextToMove.Hand = append(g.nextToMove.Hand, g.Deck[0])
 		g.Deck = g.Deck[1:] //Drop card 0 from Deck.
 	} else {
-		//TODO implement pickup discard
-		//place the card that has the highest index into the players hand
+		//place the card that has the highest index from the discard[color] into the players hand
 		i := len(g.discardPiles.Cards[m.PickupChoice])
 		if i == 0 {
 			panic(fmt.Sprintf("player %v, tried to pickup from empty discard.", g.nextToMove))
@@ -163,6 +169,7 @@ func (g *Game) Apply(m Move) {
 		topCard := g.discardPiles.Cards[m.PickupChoice][i-1]
 		g.discardPiles.Cards[m.PickupChoice] = g.discardPiles.Cards[m.PickupChoice][:i-1]
 		g.nextToMove.Hand = append(g.nextToMove.Hand, topCard)
+		g.nextToMove.DiscardPickups = append(g.nextToMove.DiscardPickups, topCard)
 	}
 	g.opponent, g.nextToMove = g.nextToMove, g.opponent // Swap active and non-active player
 	g.Turn++
@@ -200,8 +207,10 @@ func (g *Game) Deal() {
 //GetVisibleState returns the dataset that the next agent is allowed to use
 func (g *Game) GetVisibleState() VisibleState {
 	return VisibleState{Hand: g.nextToMove.Hand,
-		Table:         &(g.nextToMove.Table),
-		OpponentTable: &(g.opponent.Table),
-		Discards:      &(g.discardPiles),
-		DeckCardsLeft: len(g.Deck)}
+		Table:                  &(g.nextToMove.Table),
+		OpponentTable:          &(g.opponent.Table),
+		OpponentHandKnownCards: g.opponent.DiscardPickups,
+		Discards:               &(g.discardPiles),
+		DeckCardsLeft:          len(g.Deck)}
+
 }

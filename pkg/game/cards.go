@@ -23,11 +23,48 @@ func (c Card) String() string {
 var CardColors = []string{"B", "R", "G", "Y", "W"}
 
 //CardValues contains the valid card Values
-var CardValues = []string{"2", "3", "4", "5", "6", "7", "8", "9", "H", "H", "H"}
+var CardValues = []string{"2", "3", "4", "5", "6", "7", "8", "9", "X", "H", "H", "H"}
 
 //CanStackOn returns true of the card can stack on top of the Card passed as argument.
 func (c Card) CanStackOn(p Card) bool { //6<H
 	return c.Col == p.Col && (((p.Val < c.Val) && (c.Val != "H") || (p.Val == "H" && c.Val != "H")) || p.Val == "H" && c.Val == "H")
+}
+
+//NewCard makes a Card out of a string
+// the input string should be length 2 and have form/[B|R|G|Y|W][2..9|X|H]/
+func NewCard(in string) Card {
+	//Check that the color indicator is in the list of CardColors
+	validColor := false
+	for _, v := range CardColors {
+		if string(in[0]) == v {
+			validColor = true
+			break //stop searching
+		}
+	}
+	//If its not then stop.
+	if !validColor {
+		panic("Tried to make a card with an invalid color.")
+	}
+	//Everything seems fine(value errors handled in valToNum), make the card...
+	return Card{Col: string(in[0]), Val: string(in[1]), ValNum: valToNum(string(in[1]))}
+}
+
+//utility function to convert a string value for a card to a number value
+func valToNum(val string) int {
+	valnum := 0
+	var err error
+	switch val {
+	case "H":
+		valnum = -1
+	case "X":
+		valnum = 10
+	default:
+		valnum, err = strconv.Atoi(val)
+		if err != nil {
+			panic(fmt.Sprintf("error converting %v to int", val))
+		}
+	}
+	return valnum
 }
 
 //GiveRandomExampleCard is a utility function, it will present a random card.
@@ -35,17 +72,7 @@ func (c Card) CanStackOn(p Card) bool { //6<H
 func GiveRandomExampleCard() Card {
 	var col string = CardColors[rand.Intn(len(CardColors))]
 	var val string = CardValues[rand.Intn(len(CardValues))]
-	valnum := 0
-	if val == "H" {
-		valnum = -1
-	} else {
-		var err error
-		valnum, err = strconv.Atoi(val)
-		if err != nil {
-			panic(fmt.Sprintf("error converting %v to int", val))
-		}
-	}
-	return Card{Col: col, Val: val, ValNum: valnum}
+	return NewCard(col + val)
 }
 
 //GiveRandomExampleCardset is a utility function, it will present a random cardset.
@@ -71,17 +98,7 @@ func (g *Game) InitializeDeck() {
 	g.Deck = make([]Card, 0, len(CardColors)*len(CardValues)) //one of each value of each color
 	for _, col := range CardColors {
 		for _, val := range CardValues {
-			valnum := 0
-			if val == "H" {
-				valnum = -1
-			} else {
-				var err error
-				valnum, err = strconv.Atoi(val)
-				if err != nil {
-					panic(fmt.Sprintf("error converting %v to int", val))
-				}
-			}
-			g.Deck = append(g.Deck, Card{Col: col, Val: val, ValNum: valnum})
+			g.Deck = append(g.Deck, NewCard(col+val))
 		}
 	}
 }
