@@ -36,7 +36,7 @@ func (p BasicLogicPlayer) SelectMove(vs game.VisibleState) game.Move {
 			}
 		} else {
 			gapSizes[i] = v.ValNum - vs.Table.Cards[color][len(vs.Table.Cards[color])-1].ValNum
-			fmt.Printf("Card[%v] compared with card[%v], gapSize= %v\n", v, vs.Table.Cards[color][len(vs.Table.Cards[color])-1], gapSizes[i])
+			//fmt.Printf("Card[%v] compared with card[%v], gapSize= %v\n", v, vs.Table.Cards[color][len(vs.Table.Cards[color])-1], gapSizes[i])
 		}
 		if minGap > gapSizes[i] && gapSizes[i] >= 0 {
 			minGap = gapSizes[i]
