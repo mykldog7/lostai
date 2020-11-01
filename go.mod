@@ -1,4 +1,4 @@
-module mykldog7/lostai
+module github.com/mykldog7/lostai
 
 go 1.15
 
