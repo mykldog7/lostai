@@ -21,25 +21,27 @@ type RandomLegalMovePlayer struct {
 
 //SelectMove returns the Move that the AI player is selecting,
 // in this case its a random legal move.
-func (p RandomLegalMovePlayer) SelectMove(vs game.VisibleState) game.Move {
+func (p RandomLegalMovePlayer) SelectMove(Vs game.VisibleState) game.Move {
 	//Shuffle the hand
-	rand.Shuffle(len(vs.Hand), func(i, j int) {
-		vs.Hand[i], vs.Hand[j] = vs.Hand[j], vs.Hand[i]
+	rand.Shuffle(len(Vs.Hand), func(i, j int) {
+		Vs.Hand[i], Vs.Hand[j] = Vs.Hand[j], Vs.Hand[i]
 	})
 	//Search through cards in hand.. play the first legal one. If none are legal discard the first one.
 	i := 0
-	for ; i < len(vs.Hand); i++ {
-		color := vs.Hand[i].Col
-		cardsOfColor := len(vs.Table.Cards[color])
+	for ; i < len(Vs.Hand); i++ {
+		color := Vs.Hand[i].Col
+		cardsOfColor := len(Vs.Table.Cards[color])
 		if cardsOfColor == 0 {
-			return game.Move{C: vs.Hand[i], Discard: false, PickupChoice: "new"}
+			fmt.Println(Vs.Hand[i])
+			return game.Move{C: Vs.Hand[i], Discard: false, PickupChoice: "new"}
 		}
-		if vs.Hand[i].CanStackOn(vs.Table.Cards[color][len(vs.Table.Cards[color])-1]) {
-			return game.Move{C: vs.Hand[i], Discard: false, PickupChoice: "new"}
+		if Vs.Hand[i].CanStackOn(Vs.Table.Cards[color][len(Vs.Table.Cards[color])-1]) {
+			fmt.Println(Vs.Hand[i])
+			return game.Move{C: Vs.Hand[i], Discard: false, PickupChoice: "new"}
 		}
 	}
 	//discard if we can't find a legal move to play to the table
-	return game.Move{C: vs.Hand[0], Discard: true, PickupChoice: "new"}
+	return game.Move{C: Vs.Hand[0], Discard: true, PickupChoice: "new"}
 }
 
 func (p RandomLegalMovePlayer) String() string {

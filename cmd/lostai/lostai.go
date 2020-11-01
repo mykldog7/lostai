@@ -9,11 +9,11 @@ import (
 func main() {
 	g := game.NewGame()
 	g.AddPlayer(players.RandomLegalMovePlayer{Name: "Annie"}, 1)
-	g.AddPlayer(players.RandomLegalMovePlayer{Name: "Bobby"}, 2)
+	g.AddPlayer(players.BasicLogicPlayer{Name: "Bobby"}, 2)
 
 	fmt.Println("Starting simulation...")
 	fmt.Println("Shuffling...")
-	g.Shuffle(0)
+	g.Shuffle(2)
 	//Deal the hands
 	fmt.Println("Dealing...")
 	g.Deal()

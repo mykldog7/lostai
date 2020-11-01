@@ -29,7 +29,7 @@ func (m Move) String() string {
 	} else {
 		playDest = "table"
 	}
-	return fmt.Sprintf("plays %v to %v then picks up %v", m.C, playDest, m.PickupChoice)
+	return fmt.Sprintf("[%v -> %v, pickup: %v]", m.C, playDest, m.PickupChoice)
 }
 
 //CardSet stores the set of cards that a player will score or a set of cards discarded.
@@ -66,8 +66,8 @@ type VisibleState struct {
 }
 
 func (vs VisibleState) String() string {
-	return fmt.Sprintf("VisibleState:\nHand:%v,Table:%v,OpTable:%v,Discards:%v,CardsLeft:%v",
-		vs.Hand, vs.Table, vs.OpponentTable, vs.Discards, vs.DeckCardsLeft)
+	return fmt.Sprintf("VisibleState:\nHand:%v\nTable:%v\nOpTable:%v\nOpCardsKnown:%v\nDiscards:%v\nCardsLeft:%v",
+		vs.Hand, vs.Table, vs.OpponentTable, vs.OpponentHandKnownCards, vs.Discards, vs.DeckCardsLeft)
 }
 
 //Contender tracks all data relevant to a player of the Game.
