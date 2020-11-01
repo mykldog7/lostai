@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"lostcity/pkg/game"
-	"lostcity/pkg/players"
+	"mykldog7/lostai/pkg/game"
+	"mykldog7/lostai/pkg/players"
 )
 
 func main() {

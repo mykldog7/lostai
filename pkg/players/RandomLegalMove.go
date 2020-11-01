@@ -2,8 +2,8 @@ package players
 
 import (
 	"fmt"
-	"lostcity/pkg/game"
 	"math/rand"
+	"mykldog7/lostai/pkg/game"
 )
 
 //Player implementation goes here
