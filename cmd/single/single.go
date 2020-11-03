@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"mykldog7/lostai/pkg/game"
-	"mykldog7/lostai/pkg/players"
+
+	"github.com/mykldog7/lostai/pkg/game"
+	"github.com/mykldog7/lostai/pkg/players"
 )
 
 // VisibleState{Hand: g.nextToMove.Hand,

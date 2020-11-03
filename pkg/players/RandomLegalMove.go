@@ -3,7 +3,8 @@ package players
 import (
 	"fmt"
 	"math/rand"
-	"mykldog7/lostai/pkg/game"
+
+	"github.com/mykldog7/lostai/pkg/game"
 )
 
 //Player implementation goes here
