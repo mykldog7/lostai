@@ -43,7 +43,7 @@ type CardSet struct {
 func (d *CardSet) String() string {
 	report := ""
 	for col, cards := range d.Cards {
-		report += fmt.Sprintf("%v:%v\n", col, cards)
+		report += fmt.Sprintf(" %v:%v\n", col, cards)
 	}
 	return report
 }
@@ -66,7 +66,7 @@ type VisibleState struct {
 }
 
 func (vs VisibleState) String() string {
-	return fmt.Sprintf("VisibleState:\nHand:%v\nTable:%v\nOpTable:%v\nOpCardsKnown:%v\nDiscards:%v\nCardsLeft:%v",
+	return fmt.Sprintf("VisibleState:\nPlayersHand:%v\nTable:\n%vOpTable:\n%vOpHandCardsKnown:%v\nDiscards:\n%vDeckCardsLeft:%v",
 		vs.Hand, vs.Table, vs.OpponentTable, vs.OpponentHandKnownCards, vs.Discards, vs.DeckCardsLeft)
 }
 

@@ -52,14 +52,13 @@ func main() {
 		DeckCardsLeft:          deckCardsLeft,
 	}
 
-	fmt.Println(vs)
 	//Get player instance
-	player := players.BasicLogicPlayer{Name: "Single"}
+	player := players.CalculatingAIPlayer{Name: "Single"}
 
 	//Request move from player
 	move := player.SelectMove(vs)
 
 	//Output
-	fmt.Printf("%v has hand: %v\n", player, hand)
+	fmt.Println(vs)
 	fmt.Printf("%v, plays move %v\n", player, move)
 }
