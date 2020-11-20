@@ -53,7 +53,7 @@ func main() {
 	}
 
 	//Get player instance
-	player := players.CalculatingAIPlayer{Name: "Single"}
+	player := players.CalculatingSingleMoveAIPlayer{Name: "Single"}
 
 	//Request move from player
 	move := player.SelectMove(vs)

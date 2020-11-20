@@ -50,7 +50,7 @@ func (p CalculatingSingleMoveAIPlayer) SelectMove(vs game.VisibleState) game.Mov
 //  have a clear/consise method for managing prioirty of card play as the end of the game arrives.
 func expectedFinalScore(vs game.VisibleState, c game.Card, bestScoreSoFar int) int {
 	//
-	stack := *(vs.Table[c.Col])
-	fmt.Println("Expected score of stack is: %v", stack.Score)
+	stack := vs.Table.Cards[c.Col]
+	fmt.Println("Expected score of stack is: %v", game.ScoreStack(stack))
 	return c.ValNum
 }
