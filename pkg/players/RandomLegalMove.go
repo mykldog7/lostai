@@ -33,11 +33,11 @@ func (p RandomLegalMovePlayer) SelectMove(Vs game.VisibleState) game.Move {
 		color := Vs.Hand[i].Col
 		cardsOfColor := len(Vs.Table.Cards[color])
 		if cardsOfColor == 0 {
-			fmt.Println(Vs.Hand[i])
+			//fmt.Println(Vs.Hand[i])
 			return game.Move{C: Vs.Hand[i], Discard: false, PickupChoice: "new"}
 		}
 		if Vs.Hand[i].CanStackOn(Vs.Table.Cards[color][len(Vs.Table.Cards[color])-1]) {
-			fmt.Println(Vs.Hand[i])
+			//fmt.Println(Vs.Hand[i])
 			return game.Move{C: Vs.Hand[i], Discard: false, PickupChoice: "new"}
 		}
 	}
